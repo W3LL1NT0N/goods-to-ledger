@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { calcularEstoque, novoRecebimento, uid, update, useDB, usuarioAtual } from "@/lib/atlas/store";
 import { pode } from "@/lib/atlas/rules";
-import type { Recebimento } from "@/lib/atlas/types";
+import type { DocEntrada, Recebimento } from "@/lib/atlas/types";
 import { Btn, Combo, Field, Input, Panel, Table, Tag, dataBR, dataHoraBR } from "./ui";
 import { nomeGalpao, nomeProjeto, optGalpoes, optProjetos, optSkus, skuDe } from "./lists";
 import { EntradaEditor } from "./Entrada";
@@ -59,13 +59,13 @@ export function Conferencia() {
   const rom = rec?.romaneios.find((x) => x.id === sel?.ro);
   const doc = rom?.docs.find((x) => x.id === sel?.doc);
 
-  const mutDoc = (fn: (doc: NonNullable<typeof doc>) => void, acao: string, det: string) =>
+  const mutDoc = (fn: (doc: DocEntrada) => void, acao: string, det: string) =>
     update((db) => {
       const dd = db.recebimentos.find((r) => r.id === sel!.r)!.romaneios.find((x) => x.id === sel!.ro)!.docs.find((x) => x.id === sel!.doc)!;
       fn(dd);
     }, { acao, detalhe: `REC ${rec!.numero} / ${rom!.codigo} / ${doc!.numero}: ${det}` });
 
-  const pendDoc = (dc: NonNullable<typeof doc>) => dc.itens.reduce((a, it) => {
+  const pendDoc = (dc: DocEntrada) => dc.itens.reduce((a, it) => {
     const s = skuDe(d, it.skuId);
     return a + (s?.tipo === "SERIALIZADO" ? it.unidades.filter((x) => x.status === "PENDENTE").length : it.qtdConferida == null ? 1 : 0);
   }, 0);
